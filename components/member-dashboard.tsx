@@ -27,7 +27,6 @@ export function MemberDashboard({ userData, onNavigate }: { userData: UserData, 
 
   return (
     <div className="min-h-screen bg-black text-white p-4 pb-24 font-sans">
-      {/* Header */}
       <header className="flex items-center justify-between mb-8 pt-4">
         <div>
           <h1 className="text-2xl font-black italic text-white uppercase tracking-tighter">
@@ -42,7 +41,6 @@ export function MemberDashboard({ userData, onNavigate }: { userData: UserData, 
         </button>
       </header>
 
-      {/* Profile Card (QR Section) */}
       <div className="bg-zinc-900 border border-white/5 rounded-[2rem] p-6 mb-8 text-center relative overflow-hidden shadow-2xl">
         <div className="absolute top-0 right-0 p-2 bg-[#EAB308] text-black text-[10px] font-black uppercase italic px-4 rounded-bl-xl">
           Active Member
@@ -56,7 +54,6 @@ export function MemberDashboard({ userData, onNavigate }: { userData: UserData, 
         <p className="text-[#EAB308] text-[9px] font-black tracking-[0.3em] uppercase mt-1 opacity-80">Digital Access Key</p>
       </div>
 
-      {/* Schedule Header + Toggle */}
       <div className="flex items-center justify-between mb-6 px-1">
         <h2 className="text-sm font-black uppercase italic tracking-widest text-zinc-400">Weekly Schedule</h2>
         <div className="flex bg-zinc-900 rounded-xl p-1 border border-white/5">
@@ -75,7 +72,6 @@ export function MemberDashboard({ userData, onNavigate }: { userData: UserData, 
         </div>
       </div>
 
-      {/* Content Area */}
       {viewMode === "list" ? (
         <div className="space-y-3">
           {classes.map((cls) => (
@@ -89,16 +85,16 @@ export function MemberDashboard({ userData, onNavigate }: { userData: UserData, 
                 Book
               </button>
             </div>
-          ))
-        ) : (
-          <div className="bg-zinc-900/30 border border-dashed border-white/10 p-12 rounded-[2rem] text-center">
-            <CalendarDays size={40} className="mx-auto text-zinc-800 mb-3" />
-            <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em]">Calendar Syncing...</p>
-            <p className="text-[9px] text-zinc-700 mt-1 uppercase italic font-bold">Standard View Recommended</p>
-          </div>
-        )}
+          ))}
+        </div>
+      ) : (
+        <div className="bg-zinc-900/30 border border-dashed border-white/10 p-12 rounded-[2rem] text-center">
+          <CalendarDays size={40} className="mx-auto text-zinc-800 mb-3" />
+          <p className="text-zinc-500 text-[10px] font-black uppercase tracking-[0.2em]">Calendar Syncing...</p>
+          <p className="text-[9px] text-zinc-700 mt-1 uppercase italic font-bold">Standard View Recommended</p>
+        </div>
+      )}
 
-      {/* Bottom Nav */}
       <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-md bg-zinc-900/80 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-3 flex justify-around items-center shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
         <button className="p-3 text-[#EAB308] bg-[#EAB308]/10 rounded-2xl transition-all shadow-inner"><QrCode size={22} /></button>
         <button className="p-3 text-zinc-500 hover:text-white transition-colors"><Dumbbell size={22} /></button>
