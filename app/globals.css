@@ -3,33 +3,22 @@
 @tailwind utilities;
 
 :root {
-  --background: #000000;
-  --foreground: #ffffff;
-  --primary: #EAB308;
-  --primary-foreground: #000000;
-  --card: rgba(255, 255, 255, 0.03);
-  --card-foreground: #ffffff;
-  --border: rgba(255, 255, 255, 0.1);
-  --radius: 1rem;
+  --background: 0 0% 0%;
+  --foreground: 0 0% 100%;
+  --primary: 47.9 95.8% 53.1%;
+  --primary-foreground: 26 83.3% 1.1%;
+  --card: 0 0% 3%;
+  --card-foreground: 0 0% 100%;
+  --popover: 0 0% 3%;
+  --popover-foreground: 0 0% 100%;
+  --border: 0 0% 12%;
+  --input: 0 0% 12%;
+  --ring: 47.9 95.8% 53.1%;
+  --radius: 0.75rem;
 }
 
 @layer base {
   body {
-    background-color: var(--background);
-    color: var(--foreground);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    @apply bg-black text-white antialiased;
   }
-}
-
-/* Utilitare pentru design-ul de v0 */
-.glass-effect {
-  background: var(--card);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-}
-
-.neon-border {
-  border: 1px solid var(--primary);
-  box-shadow: 0 0 15px rgba(234, 179, 8, 0.2);
 }
