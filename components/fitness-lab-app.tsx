@@ -30,10 +30,10 @@ export function FitnessLabApp() {
         setUserData({
           fullName: user.user_metadata.full_name || "Member",
           email: user.email || "",
-          profileImage: user.user_metadata.avatar_url,
-          membershipStatus: "active"
+          profileImage: user.user_metadata.avatar_url
         })
-        setCurrentScreen("dashboard")
+        // DACĂ E LOGAT DAR NU ARE ABONAMENT, ÎL TRIMITEM LA ONBOARDING, NU LA DASHBOARD
+        setCurrentScreen("onboarding") 
       }
       setIsLoading(false)
     }
@@ -45,14 +45,10 @@ export function FitnessLabApp() {
         setUserData({
           fullName: session.user.user_metadata.full_name || "Member",
           email: session.user.email || "",
-          profileImage: session.user.user_metadata.avatar_url,
-          membershipStatus: "active"
+          profileImage: session.user.user_metadata.avatar_url
         })
-        setCurrentScreen("dashboard")
-      }
-      if (event === 'SIGNED_OUT') {
-        setUserData(null)
-        setCurrentScreen("landing")
+        // REZOLVARE: Mergem la onboarding după login, nu la dashboard direct
+        setCurrentScreen("onboarding")
       }
     })
 

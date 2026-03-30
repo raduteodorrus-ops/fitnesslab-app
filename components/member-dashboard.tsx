@@ -1,218 +1,118 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { QrCode, Calendar, MapPin, Clock, Check, LogOut, Dumbbell } from "lucide-react"
+import { useState } from "react"
+import { Calendar } from "@/components/ui/calendar"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { CalendarDays, List, QrCode, User, Dumbbell } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
-import { supabase } from "@/lib/supabase"
-import { useRouter } from "next/navigation"
 
-interface MemberDashboardProps {
-  onNavigate: (screen: any) => void
+interface UserData {
+  fullName: string
+  email: string
+  profileImage?: string
 }
 
-type TabType = "pass" | "schedule"
+export function MemberDashboard({ userData, onNavigate }: { userData: UserData, onNavigate: (s: any) => void }) {
+  const [viewMode, setViewMode] = useState<"list" | "calendar">("list")
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date())
 
-export function MemberDashboard({ onNavigate }: MemberDashboardProps) {
-  const [activeTab, setActiveTab] = useState<TabType>("pass")
-  const [selectedLocation, setSelectedLocation] = useState<string>("LUPENI")
-  const [bookedClasses, setBookedClasses] = useState<string[]>([])
-  const [userData, setUserData] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const router = useRouter()
-
-  const locations = ["LUPENI", "VULCAN", "PETROȘANI"]
-
-  // FETCH DATE REALE DIN SUPABASE
-  useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) {
-        onNavigate("landing")
-        return
-      }
-
-      const { data: member } = await supabase
-        .from('members')
-        .select('*')
-        .eq('email', user.email)
-        .single()
-
-      setUserData(member || { fullName: user.user_metadata.full_name, email: user.email })
-      setLoading(false)
-    }
-    fetchUser()
-  }, [onNavigate])
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut()
-    window.location.href = "/"
-  }
-
-  if (loading) return (
-    <div className="min-h-screen bg-black flex items-center justify-center">
-      <div className="text-primary font-black italic animate-pulse tracking-widest">LOADING LAB...</div>
-    </div>
-  )
+  const classes = [
+    { id: 1, name: "Body Pump", time: "09:00 AM", instructor: "Alex", day: new Date() },
+    { id: 2, name: "HIIT Blast", time: "06:30 PM", instructor: "Andreea", day: new Date() },
+    { id: 3, name: "Yoga Flow", time: "08:00 AM", instructor: "Maria", day: new Date(new Date().setDate(new Date().getDate() + 1)) },
+  ]
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="min-h-screen bg-black flex flex-col selection:bg-primary selection:text-black"
-    >
-      {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-black/80 border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-[0_0_20px_rgba(234,179,8,0.2)]">
-                <Dumbbell className="w-6 h-6 text-black" />
-              </div>
-              <span className="text-xl font-black uppercase tracking-tighter text-white italic">
-                FITNESS <span className="text-primary">LAB</span>
-              </span>
+    <div className="min-h-screen bg-black p-4 pb-24">
+      {/* Header cu Profile */}
+      <header className="flex items-center justify-between mb-8 pt-4">
+        <div>
+          <h1 className="text-2xl font-black italic text-white uppercase tracking-tighter">
+            THE LAB <span className="text-primary">PASS</span>
+          </h1>
+          <p className="text-zinc-500 text-xs font-bold uppercase tracking-widest">Ready to grind, {userData.fullName.split(' ')[0]}?</p>
+        </div>
+        <div className="h-12 w-12 rounded-full border-2 border-primary overflow-hidden">
+          {userData.profileImage ? (
+            <img src={userData.profileImage} alt="Profile" className="h-full w-full object-cover" />
+          ) : (
+            <div className="h-full w-full bg-zinc-800 flex items-center justify-center text-primary font-bold">
+              {userData.fullName[0]}
             </div>
-            <button
-              onClick={handleLogout}
-              className="p-3 bg-white/5 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all border border-white/5"
-            >
-              <LogOut className="w-5 h-5" />
-            </button>
-          </div>
+          )}
         </div>
       </header>
 
-      {/* Tab Navigation */}
-      <div className="px-4 py-6 border-b border-white/5 bg-zinc-950/30">
-        <div className="max-w-md mx-auto flex gap-2 p-1.5 bg-black border border-white/10 rounded-2xl">
-          <button
-            onClick={() => setActiveTab("pass")}
-            className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-black uppercase text-[10px] tracking-[0.2em] transition-all ${
-              activeTab === "pass"
-                ? "bg-primary text-black shadow-lg shadow-primary/20"
-                : "text-zinc-500 hover:text-white"
-            }`}
+      {/* QR Code Section (Digital Pass) */}
+      <Card className="bg-zinc-900 border-zinc-800 mb-8 overflow-hidden relative">
+        <div className="absolute top-0 right-0 p-2 bg-primary text-black text-[10px] font-black uppercase italic px-3">Active Member</div>
+        <CardContent className="pt-8 flex flex-col items-center">
+          <div className="bg-white p-3 rounded-xl mb-4">
+            <QRCodeSVG value={`user:${userData.email}`} size={180} bgColor="#ffffff" fgColor="#000000" />
+          </div>
+          <p className="text-zinc-400 text-[10px] uppercase font-bold tracking-widest mb-4">Scan at the entrance</p>
+        </CardContent>
+      </Card>
+
+      {/* Schedule Section cu Toggle */}
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="text-lg font-black italic uppercase text-white">Weekly Schedule</h2>
+        <div className="flex bg-zinc-900 p-1 rounded-lg border border-zinc-800">
+          <Button 
+            variant={viewMode === "list" ? "default" : "ghost"} 
+            size="sm" 
+            className="h-8 px-3 rounded-md"
+            onClick={() => setViewMode("list")}
           >
-            <QrCode className="w-4 h-4" />
-            Digital Pass
-          </button>
-          <button
-            onClick={() => setActiveTab("schedule")}
-            className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl font-black uppercase text-[10px] tracking-[0.2em] transition-all ${
-              activeTab === "schedule"
-                ? "bg-primary text-black shadow-lg shadow-primary/20"
-                : "text-zinc-500 hover:text-white"
-            }`}
+            <List className="h-4 w-4 mr-1" /> List
+          </Button>
+          <Button 
+            variant={viewMode === "calendar" ? "default" : "ghost"} 
+            size="sm" 
+            className="h-8 px-3 rounded-md"
+            onClick={() => setViewMode("calendar")}
           >
-            <Calendar className="w-4 h-4" />
-            Schedule
-          </button>
+            <CalendarDays className="h-4 w-4 mr-1" /> Calendar
+          </Button>
         </div>
       </div>
 
-      {/* Content */}
-      <main className="flex-1 px-4 py-8">
-        <AnimatePresence mode="wait">
-          {activeTab === "pass" && (
-            <motion.div
-              key="pass"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="max-w-md mx-auto"
-            >
-              <div className="relative p-8 rounded-[2.5rem] bg-zinc-950 border border-white/10 shadow-2xl overflow-hidden group">
-                {/* Glow Background */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-primary/20 blur-[100px] -z-10" />
-
-                <div className="relative text-center">
-                  <div className="mb-8 flex justify-center">
-                    <div className="p-5 bg-white rounded-[2rem] shadow-[0_0_50px_rgba(255,255,255,0.1)] group-hover:scale-105 transition-transform duration-500">
-                      <QRCodeSVG
-                        value={`MEMBER:${userData?.email || 'N/A'}`}
-                        size={200}
-                        level="H"
-                        fgColor="#000000"
-                        bgColor="#ffffff"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="mb-10">
-                    <p className="text-white/30 text-[10px] font-black uppercase tracking-[0.4em] mb-2">Member ID</p>
-                    <p className="text-white font-mono text-xl tracking-[0.2em] font-bold">
-                      {userData?.id?.slice(0, 8).toUpperCase() || "FL-LAB-001"}
-                    </p>
-                  </div>
-
-                  <div className="flex items-center gap-5 bg-black/40 p-5 rounded-3xl border border-white/5 text-left backdrop-blur-md">
-                    <div className="w-16 h-16 rounded-2xl overflow-hidden border-2 border-primary/30 flex-shrink-0 shadow-lg">
-                      <img
-                        src={userData?.photo_url || `https://ui-avatars.com/api/?name=${userData?.name || 'User'}&background=EAB308&color=000`}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-black italic uppercase text-lg truncate leading-none mb-2">{userData?.name || "Member Name"}</p>
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_#22c55e]" />
-                        <span className="text-green-400 text-[10px] uppercase tracking-[0.2em] font-black italic">
-                          Pass Valid 24/7
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+      {viewMode === "list" ? (
+        <div className="space-y-3">
+          {classes.map((cls) => (
+            <div key={cls.id} className="bg-zinc-900 border border-zinc-800 p-4 rounded-xl flex justify-between items-center">
+              <div>
+                <p className="text-primary font-black italic text-sm uppercase">{cls.name}</p>
+                <p className="text-zinc-400 text-xs font-bold uppercase">{cls.time} • {cls.instructor}</p>
               </div>
-            </motion.div>
+              <Button size="sm" className="bg-zinc-800 hover:bg-primary hover:text-black font-black italic uppercase text-[10px] h-8">Book</Button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <Card className="bg-zinc-900 border-zinc-800 p-0 overflow-hidden">
+          <Calendar 
+            mode="single"
+            selected={selectedDate}
+            onSelect={setSelectedDate}
+            className="text-white bg-transparent"
+          />
+          {selectedDate && (
+            <div className="p-4 border-t border-zinc-800 bg-zinc-950">
+              <p className="text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-2">Activities for {selectedDate.toLocaleDateString()}</p>
+              <p className="text-xs text-primary font-black italic uppercase">No special events scheduled for this day.</p>
+            </div>
           )}
+        </Card>
+      )}
 
-          {activeTab === "schedule" && (
-            <motion.div
-              key="schedule"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="max-w-md mx-auto"
-            >
-              <div className="flex gap-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
-                {locations.map((loc) => (
-                  <button
-                    key={loc}
-                    onClick={() => setSelectedLocation(loc)}
-                    className={`px-6 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all whitespace-nowrap border ${
-                      selectedLocation === loc
-                        ? "bg-primary text-black border-primary shadow-lg shadow-primary/10"
-                        : "bg-zinc-950 text-zinc-500 border-white/5 hover:border-white/20"
-                    }`}
-                  >
-                    {loc}
-                  </button>
-                ))}
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="text-white/40 text-[10px] font-black uppercase tracking-[0.3em] pl-2">Available Classes</h3>
-                {/* AICI POȚI MAPA DATELE REALE DIN DB DACA AI TABEL DE CLASE */}
-                {["CROSSFIT", "BOXING", "PILATES"].map((cls, i) => (
-                  <div key={i} className="p-6 rounded-[2rem] bg-zinc-950 border border-white/5 flex justify-between items-center group hover:border-primary/30 transition-all">
-                    <div>
-                      <div className="text-primary font-black italic text-xs mb-1 uppercase tracking-widest">18:30</div>
-                      <h4 className="text-white font-black italic uppercase tracking-tight text-lg">{cls}</h4>
-                      <p className="text-zinc-600 text-[9px] font-bold uppercase tracking-[0.2em] mt-1">Sala {selectedLocation}</p>
-                    </div>
-                    <button className="px-6 py-3 bg-white text-black rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-primary transition-colors shadow-xl">
-                      Book
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
-    </motion.div>
+      {/* Bottom Nav */}
+      <nav className="fixed bottom-6 left-4 right-4 bg-zinc-900/90 backdrop-blur-md border border-zinc-800 rounded-2xl p-2 flex justify-around items-center shadow-2xl">
+        <Button variant="ghost" size="icon" className="text-primary"><QrCode /></Button>
+        <Button variant="ghost" size="icon" className="text-zinc-500 hover:text-primary"><Dumbbell /></Button>
+        <Button variant="ghost" size="icon" className="text-zinc-500 hover:text-primary"><User /></Button>
+      </nav>
+    </div>
   )
 }
