@@ -1,7 +1,6 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { AnimatePresence } from "framer-motion"
 import { LandingPage } from "./landing-page"
 import { OnboardingFlow } from "./onboarding-flow"
 import { MemberDashboard } from "./member-dashboard"
@@ -10,19 +9,11 @@ import { supabase } from "@/lib/supabase"
 
 export type AppScreen = "landing" | "onboarding" | "payment" | "dashboard"
 
-export interface UserData {
-  fullName: string
-  email: string
-  profileImage?: string
-  membershipStatus?: "active" | "inactive"
-}
-
 export function FitnessLabApp() {
   const [currentScreen, setCurrentScreen] = useState<AppScreen>("landing")
-  const [userData, setUserData] = useState<UserData | null>(null)
+  const [userData, setUserData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // ASCULTĂM DUPĂ USER ÎN SUPABASE
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser()
@@ -32,12 +23,10 @@ export function FitnessLabApp() {
           email: user.email || "",
           profileImage: user.user_metadata.avatar_url
         })
-        // DACĂ E LOGAT DAR NU ARE ABONAMENT, ÎL TRIMITEM LA ONBOARDING, NU LA DASHBOARD
-        setCurrentScreen("onboarding") 
+        setCurrentScreen("onboarding")
       }
       setIsLoading(false)
     }
-
     checkUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
@@ -47,51 +36,45 @@ export function FitnessLabApp() {
           email: session.user.email || "",
           profileImage: session.user.user_metadata.avatar_url
         })
-        // REZOLVARE: Mergem la onboarding după login, nu la dashboard direct
         setCurrentScreen("onboarding")
       }
+      if (event === 'SIGNED_OUT') {
+        setUserData(null)
+        setCurrentScreen("landing")
+      }
     })
-
     return () => subscription.unsubscribe()
   }, [])
 
-  const handleNavigate = (screen: AppScreen) => {
-    setCurrentScreen(screen)
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
-        <div className="text-primary font-black italic animate-pulse tracking-widest uppercase">
-          Initializing Lab...
-        </div>
-      </div>
-    )
-  }
+  if (isLoading) return <div className="bg-black min-h-screen" />
 
   return (
-    <main className="bg-black text-white min-h-screen font-sans selection:bg-primary selection:text-black">
-      <AnimatePresence mode="wait">
-        {currentScreen === "landing" && (
-          <LandingPage key="landing" onNavigate={handleNavigate} />
-        )}
-
-        {currentScreen === "onboarding" && (
-          <OnboardingFlow key="onboarding" onNavigate={handleNavigate} />
-        )}
-
-        {currentScreen === "payment" && (
-          <PaymentScreen key="payment" onNavigate={handleNavigate} />
-        )}
-
-        {currentScreen === "dashboard" && userData && (
-          <MemberDashboard 
-            key="dashboard" 
-            onNavigate={handleNavigate} 
-            userData={userData} 
-          />
-        )}
-      </AnimatePresence>
+    <main className="bg-black text-white min-h-screen">
+      {currentScreen === "landing" && (
+        <LandingPage onNavigate={setCurrentScreen} />
+      )}
+      
+      {currentScreen === "onboarding" && (
+        <OnboardingFlow 
+          onNavigate={setCurrentScreen} 
+          userData={userData} 
+          setUserData={setUserData} 
+        />
+      )}
+      
+      {currentScreen === "payment" && (
+        <PaymentScreen 
+          onNavigate={setCurrentScreen} 
+          userData={userData} 
+        />
+      )}
+      
+      {currentScreen === "dashboard" && userData && (
+        <MemberDashboard 
+          userData={userData} 
+          onNavigate={setCurrentScreen} 
+        />
+      )}
     </main>
   )
 }
